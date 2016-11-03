@@ -369,6 +369,9 @@ class CAddNewTaskWindow (QDialog):
 
 class CTaskTreeView(QTreeView):
     #--------------------------------------------
+    change_record_status = pyqtSignal(bool)
+
+    #--------------------------------------------
     def __init__(self):
         super().__init__()
         self.model = CDataModel()
@@ -427,12 +430,14 @@ class CTaskTreeView(QTreeView):
     def activateTask(self):
         idx  = self.indexAt(self.popup_point)
         if (idx.isValid()):
+            self.change_record_status.emit(True)
             self.model.setActiveJob(idx)
 
     #--------------------------------------------
     def deactivateTask(self):
         idx  = self.indexAt(self.popup_point)
         if (idx.isValid()):
+            self.change_record_status.emit(False)
             self.model.setDeactiveJob(idx)
 
 
@@ -454,12 +459,14 @@ class CMainWindow(QMainWindow):
         exitAction = menu.addAction('Exit')
 
         self.stIcon = QSystemTrayIcon()
-        self.stIcon.setIcon(QIcon('process-stop.png'))
+        self.stIcon.setIcon(QIcon('ready.png'))
         self.stIcon.setContextMenu(menu)
         self.stIcon.show()
 
         showAction.triggered.connect(self.showHideHandler)
         exitAction.triggered.connect(self.exitHandler)
+        self.taskView.change_record_status.connect(self.changeIcon)
+
         
 
     #--------------------------------------------
@@ -477,4 +484,10 @@ class CMainWindow(QMainWindow):
         self.appClose = True
         self.close()
 
+    #--------------------------------------------
+    def changeIcon(self, record):
+        if record:
+            self.stIcon.setIcon(QIcon('record.png'))
+        else:
+            self.stIcon.setIcon(QIcon('ready.png'))
         
